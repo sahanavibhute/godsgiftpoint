@@ -1642,3 +1642,5 @@ app.get('/api/backup/export', protect, authorize('Admin'), async (req, res) => {
 app.listen(port, () => {
   console.log(`Express API Server listening on port ${port}`);
 });
+
+export default app;
