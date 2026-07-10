@@ -1620,7 +1620,6 @@ app.get('/api/backup/export', protect, authorize('Admin'), async (req, res) => {
     const members = await User.find({ role: 'Member' });
     const trainers = await User.find({ role: 'Trainee' });
     const payments = await Payment.find();
-    const attendance = await Attendance.find();
     const dietPlans = await DietPlan.find();
     const slots = await Slot.find();
 
@@ -1630,7 +1629,6 @@ app.get('/api/backup/export', protect, authorize('Admin'), async (req, res) => {
       members,
       trainers,
       payments,
-      attendance,
       workout_diet_plans: dietPlans,
       slots
     });
