@@ -92,7 +92,7 @@ export default function App() {
   // Landing Page / Auth state
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState('login'); 
-  const [authRole, setAuthRole] = useState('Member'); 
+  const [authRole, setAuthRole] = useState('Admin'); 
 
   // Notification Drawer state
   const [showNotifications, setShowNotifications] = useState(false);
@@ -402,12 +402,12 @@ export default function App() {
           initial={{ opacity: 0, y: -20 }} 
           animate={{ opacity: 1, y: 0 }} 
           transition={{ duration: 0.8 }}
-          style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+          style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '450px' }}
         >
           {/* Top Badge */}
           <div className="landing-badge">
             <Dumbbell size={14} color="#ff3b30" />
-            <span>No Pain, No Gain - Premium Fitness Hub</span>
+            <span>God's Gift Fitness Point - Admin Console</span>
           </div>
 
           {/* Brand Logo */}
@@ -424,277 +424,24 @@ export default function App() {
             }} 
           />
 
-          {/* Subtitle */}
-          <p className="gym-main-subtitle">
-            Experience a state-of-the-art gym environment with elite training, professional diet charts, slot schedules, and comprehensive tracking. Step in, shape up, and unlock your potential.
-          </p>
-        </motion.div>
-
-        {/* Portal Cards Grid */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }} 
-          animate={{ opacity: 1, y: 0 }} 
-          transition={{ delay: 0.2, duration: 0.8 }}
-          className="portal-cards-grid"
-        >
-          {/* Member Portal Card */}
-          <div 
-            className="portal-card member-card"
-            onClick={() => {
-              setAuthRole('Member');
-              setAuthMode('login');
-              setShowAuthModal(true);
-            }}
-          >
-            <div className="portal-icon-box member">
-              <Dumbbell size={24} color="#ffffff" />
-            </div>
-            <h2>Member Portal</h2>
-            <p>Check slots, personal diet plans and details.</p>
-            <button className="portal-btn">Enter Portal</button>
-          </div>
-
-          {/* Trainee Portal Card */}
-          <div 
-            className="portal-card trainee-card"
-            onClick={() => {
-              setAuthRole('Trainee');
-              setAuthMode('login');
-              setShowAuthModal(true);
-            }}
-          >
-            <div className="portal-icon-box trainee">
-              <UserIcon size={24} color="#ffffff" />
-            </div>
-            <h2>Trainee Portal</h2>
-            <p>Manage assigned members, progress cards and diet charts.</p>
-            <button className="portal-btn">Enter Portal</button>
-          </div>
-
-          {/* Admin Portal Card */}
-          <div 
-            className="portal-card admin-card"
-            onClick={() => {
-              setAuthRole('Admin');
-              setAuthMode('login');
-              setShowAuthModal(true);
-            }}
-          >
-            <div className="portal-icon-box admin">
-              <Shield size={24} color="#ffffff" />
-            </div>
-            <h2>Admin Portal</h2>
-            <p>Complete billing control, slots scheduler and reports.</p>
-            <button className="portal-btn">Enter Portal</button>
+          {/* Inline Admin Login Form */}
+          <div className="glass-card" style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', padding: '2.5rem 2rem' }}>
+            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '1.5rem', textAlign: 'center', color: '#fff' }}>Admin Login</h2>
+            <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                <label style={{ fontSize: '0.9rem', color: '#94a3b8' }}>Phone Number</label>
+                <input type="text" value={loginPhone} onChange={(e) => setLoginPhone(e.target.value)} required placeholder="7887358585" style={{ width: '100%', height: '42px' }} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                <label style={{ fontSize: '0.9rem', color: '#94a3b8' }}>Password</label>
+                <input type="password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required placeholder="••••••••" style={{ width: '100%' }} />
+              </div>
+              <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }}>
+                {loading ? 'Signing In...' : 'Sign In'}
+              </button>
+            </form>
           </div>
         </motion.div>
-
-        {/* Modal Auth Dialog */}
-        <PortalModal isOpen={showAuthModal} zIndex={100}>
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="glass-card" 
-            style={{
-              width: '100%', maxWidth: authMode === 'register' ? '700px' : '450px',
-              maxHeight: '85vh', display: 'flex', flexDirection: 'column', padding: 0,
-              background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)',
-              overflow: 'hidden'
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem 2rem', borderBottom: '1px solid var(--glass-border)', flexShrink: 0 }}>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>
-                {authMode === 'login' && `Login as ${authRole}`}
-                {authMode === 'register' && `Member Registration`}
-                {authMode === 'forgot' && `Reset Password`}
-                {authMode === 'otp-verify' && `Verify OTP Code`}
-                {authMode === 'reset-password' && `Set New Password`}
-              </h2>
-              <button onClick={() => setShowAuthModal(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center' }}><X size={24} /></button>
-            </div>
-
-            <div style={{ overflowY: 'auto', padding: '2rem', flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-
-              {/* 1. Login Form */}
-              {authMode === 'login' && (
-                <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                    <label style={{ fontSize: '0.9rem', color: '#94a3b8' }}>Phone Number</label>
-                    <input type="text" value={loginPhone} onChange={(e) => setLoginPhone(e.target.value)} required placeholder="7887358585" style={{ width: '100%', height: '42px' }} />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                    <label style={{ fontSize: '0.9rem', color: '#94a3b8' }}>Password</label>
-                    <input type="password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required placeholder="••••••••" style={{ width: '100%' }} />
-                  </div>
-                  <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }}>
-                    {loading ? 'Signing In...' : 'Sign In'}
-                  </button>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#94a3b8', marginTop: '0.5rem' }}>
-                    {authRole !== 'Trainee' ? (
-                      <span onClick={() => setAuthMode('forgot')} style={{ color: 'var(--accent-orange)', cursor: 'pointer', fontWeight: 500 }}>Forgot Password?</span>
-                    ) : (
-                      <span style={{ color: '#64748b', cursor: 'default' }}>Contact Admin to reset password</span>
-                    )}
-                    {authRole === 'Member' && (
-                      <span>New member? <strong onClick={() => setAuthMode('register')} style={{ color: 'var(--accent-blue)', cursor: 'pointer' }}>Register Now</strong></span>
-                    )}
-                  </div>
-                </form>
-              )}
-
-              {/* 2. Register Form */}
-              {authMode === 'register' && (
-                <form onSubmit={handleRegister} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.2rem' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', gridColumn: 'span 2' }}>
-                    <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Full Name</label>
-                    <input type="text" value={regData.name} onChange={(e) => setRegData({...regData, name: e.target.value})} required placeholder="John Doe" />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', gridColumn: 'span 2' }}>
-                    <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Phone Number</label>
-                    <input 
-                      type="text" 
-                      value={regData.phone} 
-                      onChange={(e) => setRegData({...regData, phone: e.target.value})} 
-                      required 
-                      placeholder="9876543210" 
-                      style={{ width: '100%', height: '42px' }} 
-                    />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                    <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Email (Optional)</label>
-                    <input type="email" value={regData.email} onChange={(e) => setRegData({...regData, email: e.target.value})} placeholder="john@gmail.com" />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                    <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Password</label>
-                    <input type="password" value={regData.password} onChange={(e) => setRegData({...regData, password: e.target.value})} required placeholder="••••••••" />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                    <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Birth Date</label>
-                    <input type="date" value={regData.birthDate} onChange={(e) => setRegData({...regData, birthDate: e.target.value})} required />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                    <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Calculated Age</label>
-                    <input type="number" readOnly value={regData.age} style={{ background: 'var(--bg-primary)', color: '#64748b' }} />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                    <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Gender</label>
-                    <select value={regData.gender} onChange={(e) => setRegData({...regData, gender: e.target.value})}>
-                      <option>Male</option>
-                      <option>Female</option>
-                      <option>Other</option>
-                    </select>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                    <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Weight (kg)</label>
-                    <input type="number" value={regData.weight} onChange={(e) => setRegData({...regData, weight: e.target.value})} placeholder="70" />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                    <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Height (cm)</label>
-                    <input type="number" value={regData.height} onChange={(e) => setRegData({...regData, height: e.target.value})} placeholder="175" />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', gridColumn: 'span 2' }}>
-                    <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Membership Plan</label>
-                    <select value={regData.planId} onChange={(e) => setRegData({...regData, planId: e.target.value})} required>
-                      <option value="">Select Plan...</option>
-                      {plans.map(p => (
-                        <option key={p._id} value={p._id}>{p.name} - ₹{p.price}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', gridColumn: 'span 2' }}>
-                    <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Reason for Joining</label>
-                    <select value={regData.reasonForJoining} onChange={(e) => setRegData({...regData, reasonForJoining: e.target.value})}>
-                      <option>Weight Loss</option>
-                      <option>Weight Gain</option>
-                      <option>Muscle Building</option>
-                      <option>Fitness</option>
-                      <option>Cardio</option>
-                      <option>General Health</option>
-                      <option>Custom</option>
-                    </select>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', gridColumn: 'span 2' }}>
-                    <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Medical Issues (if any)</label>
-                    <input type="text" value={regData.medicalIssues} onChange={(e) => setRegData({...regData, medicalIssues: e.target.value})} placeholder="Asthma, Knee issue, etc." />
-                  </div>
-
-                  <button 
-                    type="submit" 
-                    className="btn btn-primary" 
-                    disabled={loading}
-                    style={{ gridColumn: 'span 2', marginTop: '0.5rem', cursor: 'pointer' }}
-                  >
-                    {loading ? 'Registering...' : 'Register Member'}
-                  </button>
-                  <div style={{ gridColumn: 'span 2', textAlign: 'center', fontSize: '0.85rem', color: '#94a3b8', marginTop: '0.5rem' }}>
-                    Already have an account? <strong onClick={() => setAuthMode('login')} style={{ color: 'var(--accent-orange)', cursor: 'pointer' }}>Login here</strong>
-                  </div>
-                </form>
-              )}
-
-              {/* 3. Forgot Password Request */}
-              {authMode === 'forgot' && (
-                <form onSubmit={handleSendForgotOtp} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-                  <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>
-                    {authRole === 'Trainee' 
-                      ? "We will send an OTP reset code to your registered email address." 
-                      : "We will send an OTP reset code to your registered phone number."}
-                  </p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                    <label style={{ fontSize: '0.9rem', color: '#94a3b8' }}>
-                      {authRole === 'Trainee' ? "Email Address" : "Phone Number"}
-                    </label>
-                    {authRole === 'Trainee' ? (
-                      <input 
-                        type="text" 
-                        value={forgotPhone} 
-                        onChange={(e) => setForgotPhone(e.target.value)} 
-                        required 
-                        placeholder="sophia@godsgiftfitness.com" 
-                      />
-                    ) : (
-                      <input 
-                        type="text" 
-                        value={forgotPhone} 
-                        onChange={(e) => setForgotPhone(e.target.value)} 
-                        required 
-                        placeholder="9876543210" 
-                        style={{ width: '100%', height: '42px' }} 
-                      />
-                    )}
-                  </div>
-                  <button type="submit" className="btn btn-primary">
-                    {loading ? 'Sending...' : 'Send OTP'}
-                  </button>
-                  <div style={{ textAlign: 'center', fontSize: '0.85rem', color: '#94a3b8' }}>
-                    Back to <strong onClick={() => setAuthMode('login')} style={{ color: 'var(--accent-orange)', cursor: 'pointer' }}>Login</strong>
-                  </div>
-                </form>
-              )}
-
-
-
-              {/* 5. Set New Password (Forgot Flow) */}
-              {authMode === 'reset-password' && (
-                <form onSubmit={handleResetPassword} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                    <label style={{ fontSize: '0.9rem', color: '#94a3b8' }}>Enter OTP Code</label>
-                    <input type="text" value={forgotOtp} onChange={(e) => setForgotOtp(e.target.value)} required placeholder="123456" style={{ letterSpacing: '2px', textAlign: 'center' }} />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                    <label style={{ fontSize: '0.9rem', color: '#94a3b8' }}>New Password</label>
-                    <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required placeholder="••••••••" />
-                  </div>
-                  <button type="submit" className="btn btn-primary">
-                    {loading ? 'Resetting...' : 'Change Password'}
-                  </button>
-                </form>
-              )}
-            </div>
-          </motion.div>
-        </PortalModal>
       </div>
     );
   }
@@ -948,12 +695,7 @@ export default function App() {
                   <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Email</label>
                   <input type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
                 </div>
-                {!formData.id && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', gridColumn: '1 / -1' }}>
-                    <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Password</label>
-                    <input type="password" value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} required />
-                  </div>
-                )}
+
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                   <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Birth Date</label>
                   <input type="date" value={formData.birthDate} onChange={(e) => setFormData({...formData, birthDate: e.target.value})} required style={{ height: '42px' }} />
@@ -1222,17 +964,7 @@ export default function App() {
                   <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Email Address</label>
                   <input type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                  <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
-                    {formData.id ? 'New Password (leave blank to keep current)' : 'Password'}
-                  </label>
-                  <input 
-                    type="password" 
-                    value={formData.password} 
-                    onChange={(e) => setFormData({...formData, password: e.target.value})} 
-                    required={!formData.id} 
-                  />
-                </div>
+
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                   <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Specialization</label>
                   <input type="text" value={formData.specialization} onChange={(e) => setFormData({...formData, specialization: e.target.value})} required placeholder="Bodybuilding, Strength, HIIT" />
@@ -2442,31 +2174,13 @@ export default function App() {
           </div>
 
           {/* Navigation Links */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {currentUser.role === 'Admin' && (
-              <>
-                <button onClick={() => { setActiveTab('dashboard'); setSidebarOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem 1rem', width: '100%', border: 'none', background: activeTab === 'dashboard' ? 'rgba(255,81,0,0.12)' : 'none', color: activeTab === 'dashboard' ? 'var(--accent-orange)' : '#94a3b8', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', textAlign: 'left' }}><Activity size={18} /> Dashboard</button>
-                <button onClick={() => { setActiveTab('members'); setSidebarOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem 1rem', width: '100%', border: 'none', background: activeTab === 'members' ? 'rgba(255,81,0,0.12)' : 'none', color: activeTab === 'members' ? 'var(--accent-orange)' : '#94a3b8', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', textAlign: 'left' }}><Users size={18} /> Members</button>
-                <button onClick={() => { setActiveTab('trainees'); setSidebarOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem 1rem', width: '100%', border: 'none', background: activeTab === 'trainees' ? 'rgba(255,81,0,0.12)' : 'none', color: activeTab === 'trainees' ? 'var(--accent-orange)' : '#94a3b8', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', textAlign: 'left' }}><Dumbbell size={18} /> Trainees</button>
-                <button onClick={() => { setActiveTab('plans'); setSidebarOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem 1rem', width: '100%', border: 'none', background: activeTab === 'plans' ? 'rgba(255,81,0,0.12)' : 'none', color: activeTab === 'plans' ? 'var(--accent-orange)' : '#94a3b8', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', textAlign: 'left' }}><Settings size={18} /> Plans & Pricing</button>
-                <button onClick={() => { setActiveTab('payments'); setSidebarOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem 1rem', width: '100%', border: 'none', background: activeTab === 'payments' ? 'rgba(255,81,0,0.12)' : 'none', color: activeTab === 'payments' ? 'var(--accent-orange)' : '#94a3b8', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', textAlign: 'left' }}><CreditCard size={18} /> Invoices Desk</button>
-                <button onClick={() => { setActiveTab('slots'); setSidebarOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem 1rem', width: '100%', border: 'none', background: activeTab === 'slots' ? 'rgba(255,81,0,0.12)' : 'none', color: activeTab === 'slots' ? 'var(--accent-orange)' : '#94a3b8', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', textAlign: 'left' }}><Calendar size={18} /> Slots Scheduling</button>
-                <button onClick={() => { setActiveTab('reports'); setSidebarOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem 1rem', width: '100%', border: 'none', background: activeTab === 'reports' ? 'rgba(255,81,0,0.12)' : 'none', color: activeTab === 'reports' ? 'var(--accent-orange)' : '#94a3b8', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', textAlign: 'left' }}><FileText size={18} /> Reports</button>
-              </>
-            )}
-
-            {currentUser.role === 'Trainee' && (
-              <>
-                <button onClick={() => { setActiveTab('assigned-members'); setSidebarOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem 1rem', width: '100%', border: 'none', background: activeTab === 'assigned-members' ? 'rgba(0,225,255,0.12)' : 'none', color: activeTab === 'assigned-members' ? 'var(--accent-blue)' : '#94a3b8', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', textAlign: 'left' }}><Users size={18} /> Client Members</button>
-              </>
-            )}
-
-            {currentUser.role === 'Member' && (
-              <>
-                <button onClick={() => { setActiveTab('member-home'); setSidebarOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem 1rem', width: '100%', border: 'none', background: activeTab === 'member-home' ? 'rgba(255,81,0,0.12)' : 'none', color: activeTab === 'member-home' ? 'var(--accent-orange)' : '#94a3b8', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', textAlign: 'left' }}><Activity size={18} /> My Dashboard</button>
-              </>
-            )}
-          </div>
+            <button onClick={() => { setActiveTab('dashboard'); setSidebarOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem 1rem', width: '100%', border: 'none', background: activeTab === 'dashboard' ? 'rgba(255,81,0,0.12)' : 'none', color: activeTab === 'dashboard' ? 'var(--accent-orange)' : '#94a3b8', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', textAlign: 'left' }}><Activity size={18} /> Dashboard</button>
+            <button onClick={() => { setActiveTab('members'); setSidebarOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem 1rem', width: '100%', border: 'none', background: activeTab === 'members' ? 'rgba(255,81,0,0.12)' : 'none', color: activeTab === 'members' ? 'var(--accent-orange)' : '#94a3b8', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', textAlign: 'left' }}><Users size={18} /> Members</button>
+            <button onClick={() => { setActiveTab('trainees'); setSidebarOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem 1rem', width: '100%', border: 'none', background: activeTab === 'trainees' ? 'rgba(255,81,0,0.12)' : 'none', color: activeTab === 'trainees' ? 'var(--accent-orange)' : '#94a3b8', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', textAlign: 'left' }}><Dumbbell size={18} /> Trainees</button>
+            <button onClick={() => { setActiveTab('plans'); setSidebarOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem 1rem', width: '100%', border: 'none', background: activeTab === 'plans' ? 'rgba(255,81,0,0.12)' : 'none', color: activeTab === 'plans' ? 'var(--accent-orange)' : '#94a3b8', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', textAlign: 'left' }}><Settings size={18} /> Plans & Pricing</button>
+            <button onClick={() => { setActiveTab('payments'); setSidebarOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem 1rem', width: '100%', border: 'none', background: activeTab === 'payments' ? 'rgba(255,81,0,0.12)' : 'none', color: activeTab === 'payments' ? 'var(--accent-orange)' : '#94a3b8', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', textAlign: 'left' }}><CreditCard size={18} /> Invoices Desk</button>
+            <button onClick={() => { setActiveTab('slots'); setSidebarOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem 1rem', width: '100%', border: 'none', background: activeTab === 'slots' ? 'rgba(255,81,0,0.12)' : 'none', color: activeTab === 'slots' ? 'var(--accent-orange)' : '#94a3b8', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', textAlign: 'left' }}><Calendar size={18} /> Slots Scheduling</button>
+            <button onClick={() => { setActiveTab('reports'); setSidebarOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem 1rem', width: '100%', border: 'none', background: activeTab === 'reports' ? 'rgba(255,81,0,0.12)' : 'none', color: activeTab === 'reports' ? 'var(--accent-orange)' : '#94a3b8', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', textAlign: 'left' }}><FileText size={18} /> Reports</button>
         </div>
 
         {/* Profile/Logout section */}
@@ -2546,29 +2260,13 @@ export default function App() {
         {/* Tab routing */}
         <AnimatePresence mode="wait">
           <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
-            {currentUser.role === 'Admin' && (
-              <>
-                {activeTab === 'dashboard' && <AdminDashboardView />}
-                {activeTab === 'members' && <MemberDirectoryView />}
-                {activeTab === 'trainees' && <TraineeManagementView />}
-                {activeTab === 'plans' && <PlansManagementView />}
-                {activeTab === 'payments' && <PaymentsManagementView />}
-                {activeTab === 'slots' && <SlotManagementView />}
-                {activeTab === 'reports' && <ReportsView />}
-              </>
-            )}
-
-            {currentUser.role === 'Trainee' && (
-              <>
-                {(activeTab === 'assigned-members' || activeTab === 'dashboard') && <TraineeDashboardView />}
-              </>
-            )}
-
-            {currentUser.role === 'Member' && (
-              <>
-                {(activeTab === 'member-home' || activeTab === 'dashboard') && <MemberDashboardView />}
-              </>
-            )}
+            {activeTab === 'dashboard' && <AdminDashboardView />}
+            {activeTab === 'members' && <MemberDirectoryView />}
+            {activeTab === 'trainees' && <TraineeManagementView />}
+            {activeTab === 'plans' && <PlansManagementView />}
+            {activeTab === 'payments' && <PaymentsManagementView />}
+            {activeTab === 'slots' && <SlotManagementView />}
+            {activeTab === 'reports' && <ReportsView />}
           </motion.div>
         </AnimatePresence>
       </div>

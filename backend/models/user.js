@@ -5,7 +5,10 @@ const UserSchema = new mongoose.Schema({
   name: { type: String, required: true },
   phone: { type: String, required: true, unique: true },
   email: { type: String },
-  password: { type: String, required: true },
+  password: { 
+    type: String, 
+    required: function() { return this.role === 'Admin'; } 
+  },
   role: { type: String, enum: ['Admin', 'Trainee', 'Member'], required: true },
   
   // Member fields
@@ -57,7 +60,7 @@ const UserSchema = new mongoose.Schema({
 
 // Hash password before saving
 UserSchema.pre('save', function() {
-  if (this.isModified('password')) {
+  if (this.password && this.isModified('password')) {
     const salt = bcrypt.genSaltSync(10);
     this.password = bcrypt.hashSync(this.password, salt);
   }
