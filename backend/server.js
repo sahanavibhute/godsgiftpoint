@@ -741,7 +741,7 @@ app.get('/api/trainers', protect, async (req, res) => {
 
 // Add Trainee
 app.post('/api/trainers', protect, authorize('Admin'), async (req, res) => {
-  const { name, phone, email, shift, specialization, status } = req.body;
+  const { name, phone, email, password, shift, specialization, status } = req.body;
   if (!name || !phone || !shift || !specialization) {
     return res.status(400).json({ error: 'Name, phone, specialization, and shift are required.' });
   }
