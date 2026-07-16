@@ -355,7 +355,7 @@ export default function App() {
         weight: '', height: ''
       });
 
-      showSuccess('Registration successful! Welcome to God\'s Gift Fitness Point.');
+      showSuccess('Registration successful! Welcome to God Gifts Fitness Point.');
     } catch (err) {
       showError(err.message || 'Registration failed.');
     } finally {
@@ -461,13 +461,13 @@ export default function App() {
           {/* Top Badge */}
           <div className="landing-badge">
             <Dumbbell size={14} color="#ff3b30" />
-            <span>God's Gift Fitness Point - Admin Console</span>
+            <span>God Gifts Fitness Point - Admin Console</span>
           </div>
 
           {/* Brand Logo */}
           <img 
             src="/logo.png" 
-            alt="God's Gift Fitness Point Logo" 
+            alt="God Gifts Fitness Point Logo" 
             style={{ 
               width: '400px', 
               maxWidth: '85%', 
@@ -1418,7 +1418,7 @@ export default function App() {
             <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 30 }} className="glass-card printable-invoice" style={{ width: '100%', maxWidth: '550px', background: '#fff', color: '#000', padding: '2.5rem', borderRadius: '12px', border: 'none', boxShadow: 'none' }}>
               <div style={{ textAlign: 'center', borderBottom: '2px solid #e2e8f0', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
                 <Dumbbell size={35} color="#ff5100" style={{ marginBottom: '0.5rem' }} />
-                <h3 style={{ fontSize: '1.6rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', margin: 0 }}>God's Gift Fitness Point</h3>
+                <h3 style={{ fontSize: '1.6rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', margin: 0 }}>God Gifts Fitness Point</h3>
                 <p style={{ fontSize: '0.85rem', color: '#475569', margin: '0.2rem 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.2rem' }}>
                   <MapPin size={12} /> Sinnar, Nashik (Nashik Vess, 1st Floor of Aai Nivas)
                 </p>
@@ -1450,7 +1450,7 @@ export default function App() {
               </div>
 
               <div style={{ textAlign: 'center', fontSize: '0.8rem', color: '#64748b', borderTop: '1px solid #e2e8f0', paddingTop: '1rem', marginBottom: '1.5rem' }}>
-                Thank you for training with us! God's Gift Fitness Point Sinnar.
+                Thank you for training with us! God Gifts Fitness Point Sinnar.
               </div>
 
               <div style={{ display: 'flex', gap: '1rem' }} className="receipt-actions">
@@ -2204,7 +2204,7 @@ export default function App() {
           <Menu size={24} />
         </button>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <img src="/logo.png" alt="God's Gift Logo" style={{ height: '32px', width: 'auto', filter: 'drop-shadow(0 0 5px rgba(255,170,0,0.15))' }} />
+          <img src="/logo.png" alt="God Gifts Logo" style={{ height: '32px', width: 'auto', filter: 'drop-shadow(0 0 5px rgba(255,170,0,0.15))' }} />
         </div>
         <button onClick={() => setShowNotifications(!showNotifications)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
           <div style={{ position: 'relative' }}>
@@ -2224,7 +2224,7 @@ export default function App() {
         <div>
           {/* Title */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '2.5rem' }}>
-            <img src="/logo.png" alt="God's Gift Logo" style={{ width: '160px', height: 'auto', filter: 'drop-shadow(0 0 5px rgba(255,170,0,0.15))' }} />
+            <img src="/logo.png" alt="God Gifts Logo" style={{ width: '160px', height: 'auto', filter: 'drop-shadow(0 0 5px rgba(255,170,0,0.15))' }} />
           </div>
 
           {/* Navigation Links */}

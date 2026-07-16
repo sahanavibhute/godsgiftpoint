@@ -156,7 +156,7 @@ const sendOtpSms = async (to, body, code) => {
 
   // 3. Fallback to Console Log
   console.log(`\n======================================================`);
-  console.log(`[CONSOLE SMS FALLBACK] From: God's Gift Fitness Point`);
+  console.log(`[CONSOLE SMS FALLBACK] From: God Gifts Fitness Point`);
   console.log(`[CONSOLE SMS FALLBACK] To: ${to}`);
   console.log(`[CONSOLE SMS FALLBACK] Message: ${body}`);
   console.log(`[CONSOLE SMS FALLBACK] (Note: Add FAST2SMS_API_KEY or TWILIO credentials in backend/.env to send real messages)`);
@@ -172,7 +172,7 @@ const sendMsg91OtpApi = async (phone, code) => {
   if (!authKey) {
     console.log(`\n======================================================`);
     console.log(`[MSG91 CONSOLE FALLBACK] To: ${phone}`);
-    console.log(`[MSG91 CONSOLE FALLBACK] Message: Your OTP code for God's Gift Fitness Point is ${code}. Valid for 5 mins.`);
+    console.log(`[MSG91 CONSOLE FALLBACK] Message: Your OTP code for God Gifts Fitness Point is ${code}. Valid for 5 mins.`);
     console.log(`[MSG91 CONSOLE FALLBACK] (Note: Add MSG91_AUTH_KEY and MSG91_TEMPLATE_ID in backend/.env to send real messages)`);
     console.log(`======================================================\n`);
     return { success: true, fallback: true };
@@ -236,7 +236,7 @@ const resendMsg91OtpApi = async (phone, newCode) => {
   if (!authKey) {
     console.log(`\n======================================================`);
     console.log(`[MSG91 CONSOLE RESEND] To: ${phone}`);
-    console.log(`[MSG91 CONSOLE RESEND] Message: Your new OTP code for God's Gift Fitness Point is ${newCode}. Valid for 5 mins.`);
+    console.log(`[MSG91 CONSOLE RESEND] Message: Your new OTP code for God Gifts Fitness Point is ${newCode}. Valid for 5 mins.`);
     console.log(`======================================================\n`);
     return { success: true, fallback: true };
   }
