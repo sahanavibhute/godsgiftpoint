@@ -401,6 +401,10 @@ input:focus, select:focus, textarea:focus {
     color: #000 !important;
   }
   
+  #root {
+    display: none !important;
+  }
+  
   /* Hide navigation, controls, buttons, forms, and interactive widgets */
   .sidebar, 
   .mobile-header-bar, 
