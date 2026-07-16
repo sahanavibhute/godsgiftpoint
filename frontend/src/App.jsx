@@ -191,18 +191,20 @@ export default function App() {
     setNotifications(list);
   };
 
-  // Fetch dashboard data
+  // Fetch dashboard data in parallel
   const loadDashboardData = async () => {
     if (!currentUser) return;
     setLoading(true);
     try {
       if (currentUser.role === 'Admin') {
-        const dbDash = await api.getDashboard();
-        const dbMembers = await api.getMembers();
-        const dbTrainers = await api.getTrainers();
-        const dbPlans = await api.getPlans();
-        const dbPayments = await api.getPayments();
-        const dbSlots = await api.getSlots();
+        const [dbDash, dbMembers, dbTrainers, dbPlans, dbPayments, dbSlots] = await Promise.all([
+          api.getDashboard(),
+          api.getMembers(),
+          api.getTrainers(),
+          api.getPlans(),
+          api.getPayments(),
+          api.getSlots()
+        ]);
 
         setDashboardData(dbDash);
         setMembers(dbMembers);
@@ -212,27 +214,29 @@ export default function App() {
         setSlots(dbSlots);
         compileNotifications(currentUser, dbDash, dbMembers, dbPayments, null);
       } else if (currentUser.role === 'Trainee') {
-        const dbMembers = await api.getMembers();
-        const dbSlots = await api.getSlots();
+        const [dbMembers, dbSlots] = await Promise.all([
+          api.getMembers(),
+          api.getSlots()
+        ]);
         setMembers(dbMembers);
         setSlots(dbSlots);
         compileNotifications(currentUser, null, dbMembers, [], null);
       } else if (currentUser.role === 'Member') {
-        const dbPayments = await api.getMemberPayments(currentUser._id);
-        const dbDiet = await api.getWorkoutDiet(currentUser._id);
-        const dbSlots = await api.getSlots();
-        const dbPlans = await api.getPlans();
-        
-        // Fetch fresh member details to get weightHistory
-        const freshUser = await api.getMember(currentUser._id);
+        const [dbPayments, dbDiet, dbSlots, dbPlans, freshUser] = await Promise.all([
+          api.getMemberPayments(currentUser._id),
+          api.getWorkoutDiet(currentUser._id),
+          api.getSlots(),
+          api.getPlans(),
+          api.getMember(currentUser._id)
+        ]);
+
         setCurrentUser(freshUser);
         localStorage.setItem('gymUser', JSON.stringify(freshUser));
-
         setMemberPayments(dbPayments);
         setMemberDiet(dbDiet);
         setSlots(dbSlots);
         setPlans(dbPlans);
-        compileNotifications(currentUser, null, [], dbPayments, dbDiet);
+        compileNotifications(freshUser, null, [], dbPayments, dbDiet);
       }
       setGlobalError('');
     } catch (err) {
@@ -245,6 +249,56 @@ export default function App() {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Lightweight refresh helpers to instantly sync specific lists after action submits
+  const refreshMembers = async () => {
+    try {
+      const dbMembers = await api.getMembers();
+      setMembers(dbMembers);
+      // Silently update dashboard metrics in the background
+      api.getDashboard().then(setDashboardData).catch(console.error);
+    } catch (err) {
+      console.error('Failed to refresh members:', err);
+    }
+  };
+
+  const refreshTrainers = async () => {
+    try {
+      const dbTrainers = await api.getTrainers();
+      setTrainers(dbTrainers);
+      api.getDashboard().then(setDashboardData).catch(console.error);
+    } catch (err) {
+      console.error('Failed to refresh trainers:', err);
+    }
+  };
+
+  const refreshPlans = async () => {
+    try {
+      const dbPlans = await api.getPlans();
+      setPlans(dbPlans);
+    } catch (err) {
+      console.error('Failed to refresh plans:', err);
+    }
+  };
+
+  const refreshPayments = async () => {
+    try {
+      const dbPayments = await api.getPayments();
+      setPayments(dbPayments);
+      api.getDashboard().then(setDashboardData).catch(console.error);
+    } catch (err) {
+      console.error('Failed to refresh payments:', err);
+    }
+  };
+
+  const refreshSlots = async () => {
+    try {
+      const dbSlots = await api.getSlots();
+      setSlots(dbSlots);
+    } catch (err) {
+      console.error('Failed to refresh slots:', err);
     }
   };
 
@@ -570,7 +624,7 @@ export default function App() {
           showSuccess('Member profile created.');
         }
         setShowFormModal(false);
-        loadDashboardData();
+        refreshMembers();
       } catch (err) {
         showError(err.message || 'Action failed.');
       }
@@ -582,7 +636,7 @@ export default function App() {
         await api.deleteMember(id);
         showSuccess('Member permanently deleted.');
         setShowDetailModal(false);
-        loadDashboardData();
+        refreshMembers();
       } catch (err) {
         showError(err.message);
       }
@@ -878,7 +932,7 @@ export default function App() {
           showSuccess('Trainer added successfully.');
         }
         setShowForm(false);
-        loadDashboardData();
+        refreshTrainers();
       } catch (err) {
         showError(err.message || 'Action failed.');
       }
@@ -889,7 +943,7 @@ export default function App() {
       try {
         await api.deleteTrainer(id);
         showSuccess('Trainer deleted successfully.');
-        loadDashboardData();
+        refreshTrainers();
       } catch (err) {
         showError(err.message);
       }
@@ -1012,7 +1066,7 @@ export default function App() {
           showSuccess('Plan created.');
         }
         setShowForm(false);
-        loadDashboardData();
+        refreshPlans();
       } catch (err) {
         showError(err.message);
       }
@@ -1023,7 +1077,7 @@ export default function App() {
       try {
         await api.deletePlan(id);
         showSuccess('Plan deleted successfully.');
-        loadDashboardData();
+        refreshPlans();
       } catch (err) {
         showError(err.message);
       }
@@ -1204,7 +1258,7 @@ export default function App() {
         showSuccess('New transaction invoice generated.');
         setShowInvoiceForm(false);
         setInvoiceFormPreset(null);
-        loadDashboardData();
+        refreshPayments();
       } catch (err) {
         showError(err.message);
       }
@@ -1214,7 +1268,7 @@ export default function App() {
       try {
         await api.updatePaymentStatus(id, 'Paid');
         showSuccess('Invoice status set to PAID.');
-        loadDashboardData();
+        refreshPayments();
       } catch (err) {
         showError(err.message);
       }
@@ -1225,7 +1279,7 @@ export default function App() {
       try {
         await api.deleteInvoice(id);
         showSuccess('Invoice deleted.');
-        loadDashboardData();
+        refreshPayments();
       } catch (err) {
         showError(err.message);
       }
@@ -1430,7 +1484,7 @@ export default function App() {
           showSuccess('Trainer slot created successfully.');
         }
         setShowForm(false);
-        loadDashboardData();
+        refreshSlots();
       } catch (err) {
         showError(err.message);
       }
@@ -1441,7 +1495,7 @@ export default function App() {
       try {
         await api.deleteSlot(id);
         showSuccess('Slot deleted.');
-        loadDashboardData();
+        refreshSlots();
       } catch (err) {
         showError(err.message);
       }
@@ -1581,7 +1635,7 @@ export default function App() {
         setReportRating(5);
         
         // Refresh members list
-        loadDashboardData();
+        refreshMembers();
       } catch (err) {
         showError(err.message || 'Submission failed.');
       }
