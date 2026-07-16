@@ -767,14 +767,6 @@ export default function App() {
                   </select>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                  <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Status</label>
-                  <select value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value})}>
-                    <option value="Active">Active</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Expired">Expired</option>
-                  </select>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                   <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Weight (kg)</label>
                   <input type="number" value={formData.weight} onChange={(e) => setFormData({...formData, weight: e.target.value})} />
                 </div>
