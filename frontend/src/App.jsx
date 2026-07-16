@@ -1610,7 +1610,7 @@ export default function App() {
     };
 
     // Filter trainee's assigned slots
-    const traineeSlots = slots.filter(s => s.trainerId?._id === currentUser._id || s.trainerId === currentUser._id);
+    const traineeSlots = currentUser.role === 'Admin' ? slots : slots.filter(s => s.trainerId?._id === currentUser._id || s.trainerId === currentUser._id);
 
     // Format weight progress chart data
     const progressData = selectedMember && (selectedMember.weightHistory || []).map(w => ({
@@ -1626,10 +1626,10 @@ export default function App() {
           
           {/* Assigned Batches widget */}
           <div className="glass-card glow-card-blue">
-            <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', fontWeight: 800 }}>My Assigned Batches</h2>
+            <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', fontWeight: 800 }}>{currentUser.role === 'Admin' ? 'Active Gym Batches' : 'My Assigned Batches'}</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
               {traineeSlots.length === 0 ? (
-                <span style={{ color: '#94a3b8', fontSize: '0.9rem' }}>No slots currently assigned.</span>
+                <span style={{ color: '#94a3b8', fontSize: '0.9rem' }}>No slots available.</span>
               ) : (
                 traineeSlots.map(s => (
                   <div key={s._id} style={{ background: 'rgba(255,255,255,0.02)', padding: '0.8rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.04)' }}>
@@ -1646,10 +1646,10 @@ export default function App() {
 
           {/* Client Roster list */}
           <div className="glass-card">
-            <h2 style={{ fontSize: '1.25rem', marginBottom: '1.2rem', fontWeight: 800 }}>My Client Roster</h2>
+            <h2 style={{ fontSize: '1.25rem', marginBottom: '1.2rem', fontWeight: 800 }}>{currentUser.role === 'Admin' ? 'Member Roster' : 'My Client Roster'}</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
               {members.length === 0 ? (
-                <span style={{ color: '#94a3b8' }}>No members currently assigned to you.</span>
+                <span style={{ color: '#94a3b8' }}>{currentUser.role === 'Admin' ? 'No members found.' : 'No members currently assigned to you.'}</span>
               ) : (
                 members.map(m => (
                   <div key={m._id} onClick={() => selectMemberForPlan(m)} style={{
@@ -2177,6 +2177,7 @@ export default function App() {
             <button onClick={() => { setActiveTab('dashboard'); setSidebarOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem 1rem', width: '100%', border: 'none', background: activeTab === 'dashboard' ? 'rgba(255,81,0,0.12)' : 'none', color: activeTab === 'dashboard' ? 'var(--accent-orange)' : '#94a3b8', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', textAlign: 'left' }}><Activity size={18} /> Dashboard</button>
             <button onClick={() => { setActiveTab('members'); setSidebarOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem 1rem', width: '100%', border: 'none', background: activeTab === 'members' ? 'rgba(255,81,0,0.12)' : 'none', color: activeTab === 'members' ? 'var(--accent-orange)' : '#94a3b8', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', textAlign: 'left' }}><Users size={18} /> Members</button>
             <button onClick={() => { setActiveTab('trainees'); setSidebarOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem 1rem', width: '100%', border: 'none', background: activeTab === 'trainees' ? 'rgba(255,81,0,0.12)' : 'none', color: activeTab === 'trainees' ? 'var(--accent-orange)' : '#94a3b8', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', textAlign: 'left' }}><Dumbbell size={18} /> Trainees</button>
+            <button onClick={() => { setActiveTab('diets'); setSidebarOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem 1rem', width: '100%', border: 'none', background: activeTab === 'diets' ? 'rgba(255,81,0,0.12)' : 'none', color: activeTab === 'diets' ? 'var(--accent-orange)' : '#94a3b8', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', textAlign: 'left' }}><BookOpen size={18} /> Diet & Workouts</button>
             <button onClick={() => { setActiveTab('plans'); setSidebarOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem 1rem', width: '100%', border: 'none', background: activeTab === 'plans' ? 'rgba(255,81,0,0.12)' : 'none', color: activeTab === 'plans' ? 'var(--accent-orange)' : '#94a3b8', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', textAlign: 'left' }}><Settings size={18} /> Plans & Pricing</button>
             <button onClick={() => { setActiveTab('payments'); setSidebarOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem 1rem', width: '100%', border: 'none', background: activeTab === 'payments' ? 'rgba(255,81,0,0.12)' : 'none', color: activeTab === 'payments' ? 'var(--accent-orange)' : '#94a3b8', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', textAlign: 'left' }}><CreditCard size={18} /> Invoices Desk</button>
             <button onClick={() => { setActiveTab('slots'); setSidebarOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem 1rem', width: '100%', border: 'none', background: activeTab === 'slots' ? 'rgba(255,81,0,0.12)' : 'none', color: activeTab === 'slots' ? 'var(--accent-orange)' : '#94a3b8', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', textAlign: 'left' }}><Calendar size={18} /> Slots Scheduling</button>
@@ -2263,6 +2264,7 @@ export default function App() {
             {activeTab === 'dashboard' && <AdminDashboardView />}
             {activeTab === 'members' && <MemberDirectoryView />}
             {activeTab === 'trainees' && <TraineeManagementView />}
+            {activeTab === 'diets' && <TraineeDashboardView />}
             {activeTab === 'plans' && <PlansManagementView />}
             {activeTab === 'payments' && <PaymentsManagementView />}
             {activeTab === 'slots' && <SlotManagementView />}
