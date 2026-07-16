@@ -557,7 +557,7 @@ app.post('/api/members', protect, authorize('Admin'), async (req, res) => {
         dueAmount: 0,
         paymentDate: member.joinDate,
         dueDate,
-        status: 'Paid',
+        status: member.status === 'Active' ? 'Paid' : 'Pending',
         invoiceNumber
       });
     }
@@ -611,7 +611,18 @@ app.put('/api/members/:id', protect, async (req, res) => {
       member.joinDate = joinDate || member.joinDate;
       member.planId = planId || member.planId;
       member.trainerId = trainerId || undefined;
+      const oldStatus = member.status;
       member.status = status || member.status;
+      if (status && status !== oldStatus) {
+        const latestPayment = await Payment.findOne({ memberId: member._id }).sort({ dueDate: -1 });
+        if (latestPayment) {
+          latestPayment.status = status === 'Active' ? 'Paid' : 'Pending';
+          if (latestPayment.status === 'Paid') {
+            latestPayment.dueAmount = 0;
+          }
+          await latestPayment.save();
+        }
+      }
       member.medicalIssues = medicalIssues !== undefined ? medicalIssues : member.medicalIssues;
       member.reasonForJoining = reasonForJoining !== undefined ? reasonForJoining : member.reasonForJoining;
       
@@ -1006,6 +1017,10 @@ app.post('/api/payments', protect, authorize('Admin'), async (req, res) => {
       status: status || 'Pending',
       invoiceNumber
     });
+
+    if (status === 'Paid') {
+      await User.findByIdAndUpdate(member_id, { status: 'Active' });
+    }
 
     res.status(201).json({ id: payment._id, invoice_number: invoiceNumber, message: 'Invoice generated successfully.' });
   } catch (error) {
