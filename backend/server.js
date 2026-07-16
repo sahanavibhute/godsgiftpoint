@@ -481,8 +481,8 @@ app.post('/api/members', protect, authorize('Admin'), async (req, res) => {
     status, medicalIssues, reasonForJoining, weight, height
   } = req.body;
 
-  if (!name || !phone || !password || !planId) {
-    return res.status(400).json({ error: 'Name, phone, password and plan are required.' });
+  if (!name || !phone || !planId) {
+    return res.status(400).json({ error: 'Name, phone, and plan are required.' });
   }
 
   try {
@@ -725,9 +725,9 @@ app.get('/api/trainers', protect, async (req, res) => {
 
 // Add Trainee
 app.post('/api/trainers', protect, authorize('Admin'), async (req, res) => {
-  const { name, phone, email, password, shift, specialization, status } = req.body;
-  if (!name || !phone || !password || !shift || !specialization) {
-    return res.status(400).json({ error: 'Name, phone, password, specialization, and shift are required.' });
+  const { name, phone, email, shift, specialization, status } = req.body;
+  if (!name || !phone || !shift || !specialization) {
+    return res.status(400).json({ error: 'Name, phone, specialization, and shift are required.' });
   }
 
   try {
