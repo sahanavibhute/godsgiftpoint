@@ -97,6 +97,15 @@ export default function App() {
   // Notification Drawer state
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [notificationsRead, setNotificationsRead] = useState(false);
+
+  const toggleNotifications = () => {
+    const nextState = !showNotifications;
+    setShowNotifications(nextState);
+    if (nextState) {
+      setNotificationsRead(true);
+    }
+  };
 
   // Auth Forms data
   const [loginPhone, setLoginPhone] = useState('');
@@ -188,7 +197,15 @@ export default function App() {
         list.push({ id: 7, type: 'info', text: 'Diet Routine: Your personal trainer has updated your diet schedules.' });
       }
     }
-    setNotifications(list);
+
+    setNotifications(prev => {
+      const prevTexts = prev.map(n => n.text).join('|');
+      const newTexts = list.map(n => n.text).join('|');
+      if (prevTexts !== newTexts) {
+        setNotificationsRead(false);
+      }
+      return list;
+    });
   };
 
   // Fetch dashboard data in parallel
@@ -2205,10 +2222,10 @@ export default function App() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <img src="/logo.png" alt="God Gifts Logo" style={{ height: '32px', width: 'auto', filter: 'drop-shadow(0 0 5px rgba(255,170,0,0.15))' }} />
         </div>
-        <button onClick={() => setShowNotifications(!showNotifications)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+        <button onClick={toggleNotifications} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
           <div style={{ position: 'relative' }}>
             <Bell size={20} />
-            {notifications.length > 0 && (
+            {notifications.length > 0 && !notificationsRead && (
               <span style={{ position: 'absolute', top: '-2px', right: '-2px', width: '6px', height: '6px', background: 'var(--status-expired)', borderRadius: '50%' }} />
             )}
           </div>
@@ -2255,10 +2272,10 @@ export default function App() {
         
         {/* Header Navigation Controls (Notifications icon) - Hidden on mobile, shown on desktop */}
         <div className="desktop-notification-header" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '1.5rem', position: 'relative' }}>
-          <button onClick={() => setShowNotifications(!showNotifications)} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', padding: '0.6rem', borderRadius: '50%', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <button onClick={toggleNotifications} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', padding: '0.6rem', borderRadius: '50%', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ position: 'relative' }}>
               <Bell size={20} />
-              {notifications.length > 0 && (
+              {notifications.length > 0 && !notificationsRead && (
                 <span style={{ position: 'absolute', top: '-4px', right: '-4px', width: '8px', height: '8px', background: 'var(--status-expired)', borderRadius: '50%' }} />
               )}
             </div>
