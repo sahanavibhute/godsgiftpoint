@@ -153,6 +153,31 @@ const seed = async () => {
       height: 168
     });
 
+    const member4 = await User.create({
+      _id: '6a588fbb15e36423f156d7d1',
+      name: 'Sahana Vibhute',
+      phone: '8668864498',
+      role: 'Member',
+      memberId: 'M-1004',
+      age: 23,
+      gender: 'Female',
+      birthDate: '2003-01-10',
+      joinDate: '2026-06-10',
+      planId: plan1._id,
+      trainerId: trainer1._id,
+      status: 'Active',
+      medicalIssues: 'None',
+      reasonForJoining: 'Fitness',
+      weight: 60,
+      height: 162,
+      weightHistory: [
+        { date: '2026-06-10', weight: 60 }
+      ],
+      heightHistory: [
+        { date: '2026-06-10', height: 162 }
+      ]
+    });
+
     console.log('Seeding Payments...');
     await Payment.create([
       {
@@ -184,6 +209,16 @@ const seed = async () => {
         dueDate: '2026-06-10',
         status: 'Overdue',
         invoiceNumber: 'INV-2026-003'
+      },
+      {
+        memberId: member4._id,
+        planId: plan1._id,
+        amount: plan1.price,
+        dueAmount: 0,
+        paymentDate: '2026-06-10',
+        dueDate: '2026-09-10',
+        status: 'Paid',
+        invoiceNumber: 'INV-2026-004'
       }
     ]);
 
@@ -234,6 +269,18 @@ const seed = async () => {
           { meal: 'Dinner', items: 'Baked cod file, roasted sweet potato, asparagus' }
         ],
         updatedBy: trainer2._id
+      },
+      {
+        memberId: member4._id,
+        workoutRoutine: [
+          { day: 'Mon/Tue/Thu/Fri (Lean Muscle)', exercises: 'Squats (4x10), Bench Press (4x8), Pull-ups (3xMax), Planks (3x1 min)' }
+        ],
+        dietRoutine: [
+          { meal: 'Breakfast', items: '3 Egg whites, avocado toast, green tea' },
+          { meal: 'Lunch', items: 'Grilled chicken breast with quinoa and salad' },
+          { meal: 'Dinner', items: 'Salmon fillet with steamed veggies' }
+        ],
+        updatedBy: trainer1._id
       }
     ]);
 
