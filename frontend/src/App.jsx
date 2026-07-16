@@ -689,7 +689,7 @@ export default function App() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                   <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Phone Number</label>
-                  <input type="text" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} required />
+                  <input type="text" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} required autoComplete="new-phone" />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                   <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Email</label>
@@ -958,7 +958,7 @@ export default function App() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                   <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Mobile Number</label>
-                  <input type="text" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} required />
+                  <input type="text" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} required autoComplete="new-phone" />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                   <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Email Address</label>
