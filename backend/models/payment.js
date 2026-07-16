@@ -13,4 +13,7 @@ const PaymentSchema = new mongoose.Schema({
   timestamps: true
 });
 
+PaymentSchema.index({ memberId: 1 });
+PaymentSchema.index({ dueDate: -1 });
+
 export default mongoose.model('Payment', PaymentSchema);

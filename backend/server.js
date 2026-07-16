@@ -337,81 +337,97 @@ app.get('/api/admin/dashboard', protect, authorize('Admin'), async (req, res) =>
     const today = getTodayDate();
     const currentMonth = today.substring(0, 7); // YYYY-MM
 
-    const totalMembers = await User.countDocuments({ role: 'Member' });
-    const totalTrainees = await User.countDocuments({ role: 'Trainee' });
-    const activeMembers = await User.countDocuments({ role: 'Member', status: 'Active' });
-    const expiredMembers = await User.countDocuments({ role: 'Member', status: 'Expired' });
-    
-    // Calculate Renewals due: Active members whose payments expire in the next 7 days or are already overdue
+    // 1. Execute all primary collections queries in parallel
+    const [
+      totalMembers,
+      totalTrainees,
+      activeMembers,
+      expiredMembers,
+      activeMembersDocs,
+      allMembers,
+      paidPayments,
+      monthlyPaidPayments,
+      recentInvoices,
+      plans
+    ] = await Promise.all([
+      User.countDocuments({ role: 'Member' }),
+      User.countDocuments({ role: 'Trainee' }),
+      User.countDocuments({ role: 'Member', status: 'Active' }),
+      User.countDocuments({ role: 'Member', status: 'Expired' }),
+      User.find({ role: 'Member', status: 'Active' }),
+      User.find({ role: 'Member' }),
+      Payment.find({ status: 'Paid' }),
+      Payment.find({ status: 'Paid', paymentDate: { $regex: `^${currentMonth}` } }),
+      Payment.find().populate('memberId', 'name phone memberId').sort({ createdAt: -1 }).limit(5),
+      Plan.find()
+    ]);
+
+    // Calculate totals
+    const totalRevenue = paidPayments.reduce((sum, p) => sum + p.amount, 0);
+    const monthlyRevenue = monthlyPaidPayments.reduce((sum, p) => sum + p.amount, 0);
+
+    // Calculate Renewals due in parallel
     const sevenDaysLater = new Date();
     sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
     const sevenDaysLaterStr = sevenDaysLater.toISOString().split('T')[0];
 
-    const activeMembersDocs = await User.find({ role: 'Member', status: 'Active' });
+    const activeMemberIds = activeMembersDocs.map(m => m._id);
+    const latestPaymentsForActive = await Promise.all(
+      activeMemberIds.map(id => Payment.findOne({ memberId: id }).sort({ dueDate: -1 }))
+    );
+
     let renewalsDue = 0;
-    for (const member of activeMembersDocs) {
-      const latestPayment = await Payment.findOne({ memberId: member._id }).sort({ dueDate: -1 });
+    for (const latestPayment of latestPaymentsForActive) {
       if (latestPayment && latestPayment.dueDate <= sevenDaysLaterStr) {
         renewalsDue++;
       }
     }
 
-
-    // Payments totals
-    const paidPayments = await Payment.find({ status: 'Paid' });
-    const totalRevenue = paidPayments.reduce((sum, p) => sum + p.amount, 0);
-
-    const monthlyPaidPayments = await Payment.find({
-      status: 'Paid',
-      paymentDate: { $regex: `^${currentMonth}` }
-    });
-    const monthlyRevenue = monthlyPaidPayments.reduce((sum, p) => sum + p.amount, 0);
-
-    // Calculate Paid vs Unpaid members based on their actual invoice status
+    // Calculate Paid vs Unpaid members in parallel
     let paidMembersCount = 0;
     let unpaidMembersCount = 0;
 
-    const allMembers = await User.find({ role: 'Member' });
-    for (const member of allMembers) {
-      if (member.status === 'Expired' || member.status === 'Pending') {
-        unpaidMembersCount++;
+    const checkMembers = allMembers.filter(m => m.status !== 'Expired' && m.status !== 'Pending');
+    unpaidMembersCount += (allMembers.length - checkMembers.length);
+
+    const latestPaymentsForCheck = await Promise.all(
+      checkMembers.map(m => Payment.findOne({ memberId: m._id }).sort({ dueDate: -1 }))
+    );
+
+    for (const latestPayment of latestPaymentsForCheck) {
+      if (latestPayment && latestPayment.status === 'Paid') {
+        paidMembersCount++;
       } else {
-        const latestPayment = await Payment.findOne({ memberId: member._id }).sort({ dueDate: -1 });
-        if (latestPayment && latestPayment.status === 'Paid') {
-          paidMembersCount++;
-        } else {
-          unpaidMembersCount++;
-        }
+        unpaidMembersCount++;
       }
     }
 
-    // Recent invoices
-    const recentInvoices = await Payment.find()
-      .populate('memberId', 'name phone memberId')
-      .sort({ createdAt: -1 })
-      .limit(5);
+    // Calculate plan distributions in parallel
+    const planCounts = await Promise.all(
+      plans.map(p => User.countDocuments({ role: 'Member', planId: p._id }))
+    );
+    const planDistribution = plans.map((p, idx) => ({
+      name: p.name,
+      count: planCounts[idx]
+    }));
 
-    // Plan distribution
-    const plans = await Plan.find();
-    const planDistribution = [];
-    for (const p of plans) {
-      const count = await User.countDocuments({ role: 'Member', planId: p._id });
-      planDistribution.push({ name: p.name, count });
-    }
-
-    // Revenue trends (last 6 months)
-    const revenueTrends = [];
+    // Calculate revenue trends (last 6 months) in parallel
+    const trendMonths = [];
     for (let i = 5; i >= 0; i--) {
       const d = new Date();
       d.setMonth(d.getMonth() - i);
-      const monthStr = d.toISOString().substring(0, 7); // YYYY-MM
-      const monthlyPaid = await Payment.find({
-        status: 'Paid',
-        paymentDate: { $regex: `^${monthStr}` }
-      });
-      const rev = monthlyPaid.reduce((sum, p) => sum + p.amount, 0);
-      revenueTrends.push({ month: d.toLocaleString('default', { month: 'short' }), amount: rev });
+      const monthStr = d.toISOString().substring(0, 7);
+      trendMonths.push({ monthStr, label: d.toLocaleString('default', { month: 'short' }) });
     }
+
+    const trendsPaidPayments = await Promise.all(
+      trendMonths.map(m => Payment.find({ status: 'Paid', paymentDate: { $regex: `^${m.monthStr}` } }))
+    );
+
+    const revenueTrends = trendMonths.map((m, idx) => {
+      const rev = trendsPaidPayments[idx].reduce((sum, p) => sum + p.amount, 0);
+      return { month: m.label, amount: rev };
+    });
 
     res.json({
       metrics: {
