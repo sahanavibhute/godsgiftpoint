@@ -47,7 +47,7 @@ const seed = async () => {
     const admin = await User.create({
       name: "God's Gift Gym Admin",
       phone: '7887358585',
-      password: '1234',
+      password: 'Aditya@9',
       role: 'Admin'
     });
 

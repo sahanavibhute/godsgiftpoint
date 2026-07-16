@@ -483,12 +483,12 @@ export default function App() {
             <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '1.5rem', textAlign: 'center', color: '#fff' }}>Admin Login</h2>
             <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                <label style={{ fontSize: '0.9rem', color: '#94a3b8' }}>Phone Number</label>
-                <input type="text" value={loginPhone} onChange={(e) => setLoginPhone(e.target.value)} required placeholder="7887358585" style={{ width: '100%', height: '42px' }} />
+                <label style={{ fontSize: '0.9rem', color: '#94a3b8' }}>User ID / Phone</label>
+                <input type="text" value={loginPhone} onChange={(e) => setLoginPhone(e.target.value)} required placeholder="enter user id" style={{ width: '100%', height: '42px' }} />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                 <label style={{ fontSize: '0.9rem', color: '#94a3b8' }}>Password</label>
-                <input type="password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required placeholder="••••••••" style={{ width: '100%' }} />
+                <input type="password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required placeholder="enter password" style={{ width: '100%' }} />
               </div>
               <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }}>
                 {loading ? 'Signing In...' : 'Sign In'}
