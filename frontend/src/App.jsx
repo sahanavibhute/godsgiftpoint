@@ -78,6 +78,37 @@ export default function App() {
     };
   }, []);
 
+  // Inactivity Session Timeout Monitor (10 Minutes)
+  useEffect(() => {
+    if (!currentUser) return;
+
+    let timeoutId;
+
+    const resetTimer = () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        handleLogout();
+        showError('Your session has expired due to 10 minutes of inactivity. Please login again.');
+      }, 10 * 60 * 1000); // 10 minutes in ms
+    };
+
+    // Track user action events to reset timeout countdown
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+    events.forEach(event => {
+      window.addEventListener(event, resetTimer);
+    });
+
+    // Start timer on mount/login
+    resetTimer();
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      events.forEach(event => {
+        window.removeEventListener(event, resetTimer);
+      });
+    };
+  }, [currentUser]);
+
   const [activeTab, setActiveTab] = useState('dashboard');
   const [globalError, setGlobalError] = useState('');
   const [globalSuccess, setGlobalSuccess] = useState('');

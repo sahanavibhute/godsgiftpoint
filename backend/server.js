@@ -36,7 +36,7 @@ connectDB();
 
 // Generate Token helper
 const generateToken = (id) => {
-  return jwt.sign({ id }, JWT_SECRET, { expiresIn: '30d' });
+  return jwt.sign({ id }, JWT_SECRET, { expiresIn: '10m' });
 };
 
 // Generate OTP helper
