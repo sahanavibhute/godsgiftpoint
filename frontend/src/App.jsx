@@ -1514,13 +1514,64 @@ export default function App() {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                   <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Amount Paid (INR)</label>
-                  <input type="number" value={formData.amount} onChange={(e) => setFormData({...formData, amount: e.target.value})} required />
+                  <input 
+                    type="number" 
+                    value={formData.amount} 
+                    onChange={(e) => {
+                      const amountStr = e.target.value;
+                      const chosenPlan = plans.find(p => p._id === formData.plan_id);
+                      let planPrice = chosenPlan ? chosenPlan.price : 0;
+                      if (applyDiscount) {
+                        planPrice = planPrice * 0.8;
+                      }
+                      
+                      const numericAmount = amountStr === '' ? 0 : parseFloat(amountStr);
+                      const calculatedDue = Math.max(0, planPrice - (isNaN(numericAmount) ? 0 : numericAmount));
+                      
+                      let newStatus = 'Paid';
+                      if (calculatedDue > 0) {
+                        newStatus = numericAmount > 0 ? 'Partially Paid' : 'Unpaid';
+                      } else if (numericAmount === 0 && planPrice > 0) {
+                        newStatus = 'Unpaid';
+                      }
+
+                      setFormData(prev => ({
+                        ...prev,
+                        amount: amountStr,
+                        due_amount: calculatedDue === 0 ? '' : calculatedDue,
+                        status: newStatus
+                      }));
+                    }} 
+                    required 
+                  />
                 </div>
                 
                 {/* Due amount field */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                  <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Outstanding Due Amount (Optional)</label>
-                  <input type="number" value={formData.due_amount} onChange={(e) => setFormData({...formData, due_amount: e.target.value})} placeholder="Leave blank if fully paid" />
+                  <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Outstanding Due Amount (Calculated)</label>
+                  <input 
+                    type="number" 
+                    value={formData.due_amount} 
+                    onChange={(e) => {
+                      const dueStr = e.target.value;
+                      const numericDue = dueStr === '' ? 0 : parseFloat(dueStr);
+                      const numericAmount = formData.amount === '' ? 0 : parseFloat(formData.amount);
+                      
+                      let newStatus = 'Paid';
+                      if (numericDue > 0) {
+                        newStatus = numericAmount > 0 ? 'Partially Paid' : 'Unpaid';
+                      } else if (numericAmount === 0) {
+                        newStatus = 'Unpaid';
+                      }
+
+                      setFormData(prev => ({
+                        ...prev,
+                        due_amount: dueStr,
+                        status: newStatus
+                      }));
+                    }} 
+                    placeholder="Auto-calculated" 
+                  />
                 </div>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
