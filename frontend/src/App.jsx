@@ -1649,21 +1649,46 @@ export default function App() {
 
   // ----------------------------------------------------
   // 6. SLOT MANAGEMENT PANEL
-  // ----------------------------------------------------
   function SlotManagementView() {
     const [showForm, setShowForm] = useState(false);
     const [formData, setFormData] = useState({
       id: '', name: '', timeRange: '', trainerId: '', maxCapacity: 20
     });
 
+    const parseTimeRange = (rangeStr) => {
+      const defaults = { start: '06:00', startPeriod: 'AM', end: '07:30', endPeriod: 'AM' };
+      if (!rangeStr) return defaults;
+      const parts = rangeStr.split('-');
+      if (parts.length !== 2) return defaults;
+      
+      const startPart = parts[0].trim();
+      const endPart = parts[1].trim();
+      
+      const startMatch = startPart.match(/^(\d{1,2}:\d{2})\s*(AM|PM)$/i);
+      const endMatch = endPart.match(/^(\d{1,2}:\d{2})\s*(AM|PM)$/i);
+      
+      return {
+        start: startMatch ? startMatch[1] : '06:00',
+        startPeriod: startMatch ? startMatch[2].toUpperCase() : 'AM',
+        end: endMatch ? endMatch[1] : '07:30',
+        endPeriod: endMatch ? endMatch[2].toUpperCase() : 'AM'
+      };
+    };
+
+    const [tempTime, setTempTime] = useState({
+      start: '06:00', startPeriod: 'AM', end: '07:30', endPeriod: 'AM'
+    });
+
     const handleFormSubmit = async (e) => {
       e.preventDefault();
       try {
+        const finalTimeRange = `${tempTime.start.trim()} ${tempTime.startPeriod} - ${tempTime.end.trim()} ${tempTime.endPeriod}`;
+        const submissionData = { ...formData, timeRange: finalTimeRange };
         if (formData.id) {
-          await api.updateSlot(formData.id, formData);
+          await api.updateSlot(formData.id, submissionData);
           showSuccess('Slot updated successfully.');
         } else {
-          await api.createSlot(formData);
+          await api.createSlot(submissionData);
           showSuccess('Trainer slot created successfully.');
         }
         setShowForm(false);
@@ -1684,38 +1709,13 @@ export default function App() {
       }
     };
 
-    const timeRangeOptions = [
-      "05:00 AM - 06:00 AM",
-      "06:00 AM - 07:00 AM",
-      "07:00 AM - 08:00 AM",
-      "08:00 AM - 09:00 AM",
-      "09:00 AM - 10:00 AM",
-      "10:00 AM - 11:00 AM",
-      "05:00 AM - 06:30 AM",
-      "06:00 AM - 07:30 AM",
-      "07:00 AM - 08:30 AM",
-      "08:00 AM - 09:30 AM",
-      "04:00 PM - 05:00 PM",
-      "05:00 PM - 06:00 PM",
-      "06:00 PM - 07:00 PM",
-      "07:00 PM - 08:00 PM",
-      "08:00 PM - 09:00 PM",
-      "09:00 PM - 10:00 PM",
-      "04:00 PM - 05:30 PM",
-      "05:00 PM - 06:30 PM",
-      "06:00 PM - 07:30 PM",
-      "07:00 PM - 08:30 PM",
-      "08:00 PM - 09:30 PM"
-    ];
-
-    const isCustomTime = formData.timeRange && !timeRangeOptions.includes(formData.timeRange) && formData.timeRange !== 'Custom';
-
     return (
       <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <h2 style={{ fontSize: '1.4rem', fontWeight: 800 }}>Trainer Slots Scheduler</h2>
           <button onClick={() => {
-            setFormData({ id: '', name: '', timeRange: timeRangeOptions[0], trainerId: '', maxCapacity: 20 });
+            setFormData({ id: '', name: '', timeRange: '06:00 AM - 07:30 AM', trainerId: '', maxCapacity: 20 });
+            setTempTime({ start: '06:00', startPeriod: 'AM', end: '07:30', endPeriod: 'AM' });
             setShowForm(true);
           }} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Plus size={16} /> Create Slot</button>
         </div>
@@ -1734,6 +1734,7 @@ export default function App() {
               <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.2rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem' }}>
                 <button onClick={() => {
                   setFormData({ id: s._id, name: s.name, timeRange: s.timeRange, trainerId: s.trainerId?._id || '', maxCapacity: s.maxCapacity });
+                  setTempTime(parseTimeRange(s.timeRange));
                   setShowForm(true);
                 }} className="btn btn-secondary" style={{ flex: 1, padding: '0.5rem', fontSize: '0.85rem' }}>Edit Slot</button>
                 <button onClick={() => handleDeleteSlot(s._id)} className="btn btn-secondary" style={{ padding: '0.5rem', color: 'var(--status-expired)' }}><Trash2 size={16} /></button>
@@ -1766,38 +1767,54 @@ export default function App() {
                   <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Slot Name</label>
                   <input type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required placeholder="Morning Yoga / Muscle Building" />
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                  <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Time Range</label>
-                  <select 
-                    value={isCustomTime ? 'Custom' : formData.timeRange} 
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      if (val === 'Custom') {
-                        setFormData({...formData, timeRange: '06:00 AM - 07:00 AM'}); // default custom
-                      } else {
-                        setFormData({...formData, timeRange: val});
-                      }
-                    }} 
-                    required
-                  >
-                    {timeRangeOptions.map(opt => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                    <option value="Custom">Custom Time...</option>
-                  </select>
-                </div>
-                {isCustomTime && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                    <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Custom Time Range</label>
+                
+                {/* Start Time Group */}
+                <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                    <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Start Time</label>
                     <input 
                       type="text" 
-                      value={formData.timeRange} 
-                      onChange={(e) => setFormData({...formData, timeRange: e.target.value})} 
+                      value={tempTime.start} 
+                      onChange={(e) => setTempTime({...tempTime, start: e.target.value})} 
                       required 
-                      placeholder="e.g. 02:00 PM - 03:00 PM" 
+                      placeholder="e.g. 06:00" 
                     />
                   </div>
-                )}
+                  <div style={{ width: '100px', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                    <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>AM / PM</label>
+                    <select 
+                      value={tempTime.startPeriod} 
+                      onChange={(e) => setTempTime({...tempTime, startPeriod: e.target.value})}
+                    >
+                      <option value="AM">AM</option>
+                      <option value="PM">PM</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* End Time Group */}
+                <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                    <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>End Time</label>
+                    <input 
+                      type="text" 
+                      value={tempTime.end} 
+                      onChange={(e) => setTempTime({...tempTime, end: e.target.value})} 
+                      required 
+                      placeholder="e.g. 07:30" 
+                    />
+                  </div>
+                  <div style={{ width: '100px', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                    <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>AM / PM</label>
+                    <select 
+                      value={tempTime.endPeriod} 
+                      onChange={(e) => setTempTime({...tempTime, endPeriod: e.target.value})}
+                    >
+                      <option value="AM">AM</option>
+                      <option value="PM">PM</option>
+                    </select>
+                  </div>
+                </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                   <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Assign Trainer (Optional)</label>
                   <select value={formData.trainerId} onChange={(e) => setFormData({...formData, trainerId: e.target.value})}>
