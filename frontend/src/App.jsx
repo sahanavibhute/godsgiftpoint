@@ -1655,8 +1655,28 @@ export default function App() {
       id: '', name: '', timeRange: '', trainerId: '', maxCapacity: 20
     });
 
-    const parseTimeRange = (rangeStr) => {
-      const defaults = { start: '06:00', startPeriod: 'AM', end: '07:30', endPeriod: 'AM' };
+    const rawSlotOptions = [
+      "05:00 - 06:00",
+      "06:00 - 07:00",
+      "07:00 - 08:00",
+      "08:00 - 09:00",
+      "09:00 - 10:00",
+      "10:00 - 11:00",
+      "11:00 - 12:00",
+      "12:00 - 01:00",
+      "01:00 - 02:00",
+      "02:00 - 03:00",
+      "03:00 - 04:00",
+      "04:00 - 05:00",
+      "05:00 - 06:30",
+      "06:00 - 07:30",
+      "07:00 - 08:30",
+      "08:00 - 09:30",
+      "04:00 - 05:30"
+    ];
+
+    const parseToRawSlot = (rangeStr) => {
+      const defaults = { rawSlot: '06:00 - 07:30', period: 'AM' };
       if (!rangeStr) return defaults;
       const parts = rangeStr.split('-');
       if (parts.length !== 2) return defaults;
@@ -1667,22 +1687,50 @@ export default function App() {
       const startMatch = startPart.match(/^(\d{1,2}:\d{2})\s*(AM|PM)$/i);
       const endMatch = endPart.match(/^(\d{1,2}:\d{2})\s*(AM|PM)$/i);
       
+      if (!startMatch || !endMatch) return defaults;
+      
+      const baseRawSlot = `${startMatch[1]} - ${endMatch[1]}`;
       return {
-        start: startMatch ? startMatch[1] : '06:00',
-        startPeriod: startMatch ? startMatch[2].toUpperCase() : 'AM',
-        end: endMatch ? endMatch[1] : '07:30',
-        endPeriod: endMatch ? endMatch[2].toUpperCase() : 'AM'
+        rawSlot: rawSlotOptions.includes(baseRawSlot) ? baseRawSlot : 'Custom',
+        period: startMatch[2].toUpperCase(),
+        customVal: baseRawSlot
       };
     };
 
+    const serializeTimeSlot = (rawSlot, period) => {
+      const parts = rawSlot.split('-');
+      if (parts.length !== 2) return '';
+      const start = parts[0].trim();
+      const end = parts[1].trim();
+      
+      const startHour = parseInt(start.split(':')[0]);
+      const endHour = parseInt(end.split(':')[0]);
+      
+      let startPeriod = period;
+      let endPeriod = period;
+      
+      if (period === 'AM') {
+        if (startHour === 11 && (endHour === 12 || endHour < 11)) {
+          endPeriod = 'PM';
+        }
+      } else if (period === 'PM') {
+        if (startHour === 11 && (endHour === 12 || endHour < 11)) {
+          endPeriod = 'AM';
+        }
+      }
+      return `${start} ${startPeriod} - ${end} ${endPeriod}`;
+    };
+
     const [tempTime, setTempTime] = useState({
-      start: '06:00', startPeriod: 'AM', end: '07:30', endPeriod: 'AM'
+      rawSlot: '06:00 - 07:30', period: 'AM'
     });
+    const [customRawSlot, setCustomRawSlot] = useState('');
 
     const handleFormSubmit = async (e) => {
       e.preventDefault();
       try {
-        const finalTimeRange = `${tempTime.start.trim()} ${tempTime.startPeriod} - ${tempTime.end.trim()} ${tempTime.endPeriod}`;
+        const finalRawSlot = tempTime.rawSlot === 'Custom' ? customRawSlot : tempTime.rawSlot;
+        const finalTimeRange = serializeTimeSlot(finalRawSlot, tempTime.period);
         const submissionData = { ...formData, timeRange: finalTimeRange };
         if (formData.id) {
           await api.updateSlot(formData.id, submissionData);
@@ -1715,7 +1763,8 @@ export default function App() {
           <h2 style={{ fontSize: '1.4rem', fontWeight: 800 }}>Trainer Slots Scheduler</h2>
           <button onClick={() => {
             setFormData({ id: '', name: '', timeRange: '06:00 AM - 07:30 AM', trainerId: '', maxCapacity: 20 });
-            setTempTime({ start: '06:00', startPeriod: 'AM', end: '07:30', endPeriod: 'AM' });
+            setTempTime({ rawSlot: '06:00 - 07:30', period: 'AM' });
+            setCustomRawSlot('');
             setShowForm(true);
           }} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Plus size={16} /> Create Slot</button>
         </div>
@@ -1734,7 +1783,9 @@ export default function App() {
               <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.2rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem' }}>
                 <button onClick={() => {
                   setFormData({ id: s._id, name: s.name, timeRange: s.timeRange, trainerId: s.trainerId?._id || '', maxCapacity: s.maxCapacity });
-                  setTempTime(parseTimeRange(s.timeRange));
+                  const parsed = parseToRawSlot(s.timeRange);
+                  setTempTime({ rawSlot: parsed.rawSlot, period: parsed.period });
+                  setCustomRawSlot(parsed.rawSlot === 'Custom' ? parsed.customVal : '');
                   setShowForm(true);
                 }} className="btn btn-secondary" style={{ flex: 1, padding: '0.5rem', fontSize: '0.85rem' }}>Edit Slot</button>
                 <button onClick={() => handleDeleteSlot(s._id)} className="btn btn-secondary" style={{ padding: '0.5rem', color: 'var(--status-expired)' }}><Trash2 size={16} /></button>
@@ -1768,23 +1819,34 @@ export default function App() {
                   <input type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required placeholder="Morning Yoga / Muscle Building" />
                 </div>
                 
-                {/* Start Time Group */}
+                {/* Time Slot Selection */}
                 <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                    <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Start Time</label>
-                    <input 
-                      type="text" 
-                      value={tempTime.start} 
-                      onChange={(e) => setTempTime({...tempTime, start: e.target.value})} 
-                      required 
-                      placeholder="e.g. 06:00" 
-                    />
+                    <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Select Time Slot</label>
+                    <select 
+                      value={rawSlotOptions.includes(tempTime.rawSlot) ? tempTime.rawSlot : 'Custom'}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === 'Custom') {
+                          setTempTime({ ...tempTime, rawSlot: 'Custom' });
+                          setCustomRawSlot('06:00 - 07:30');
+                        } else {
+                          setTempTime({ ...tempTime, rawSlot: val });
+                        }
+                      }}
+                      required
+                    >
+                      {rawSlotOptions.map(opt => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                      <option value="Custom">Custom time interval...</option>
+                    </select>
                   </div>
                   <div style={{ width: '100px', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                     <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>AM / PM</label>
                     <select 
-                      value={tempTime.startPeriod} 
-                      onChange={(e) => setTempTime({...tempTime, startPeriod: e.target.value})}
+                      value={tempTime.period} 
+                      onChange={(e) => setTempTime({...tempTime, period: e.target.value})}
                     >
                       <option value="AM">AM</option>
                       <option value="PM">PM</option>
@@ -1792,29 +1854,19 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* End Time Group */}
-                <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                    <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>End Time</label>
+                {/* Custom Time Interval Input */}
+                {tempTime.rawSlot === 'Custom' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                    <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Specify Time Interval</label>
                     <input 
                       type="text" 
-                      value={tempTime.end} 
-                      onChange={(e) => setTempTime({...tempTime, end: e.target.value})} 
+                      value={customRawSlot} 
+                      onChange={(e) => setCustomRawSlot(e.target.value)} 
+                      placeholder="e.g. 02:15 - 03:45" 
                       required 
-                      placeholder="e.g. 07:30" 
                     />
                   </div>
-                  <div style={{ width: '100px', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                    <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>AM / PM</label>
-                    <select 
-                      value={tempTime.endPeriod} 
-                      onChange={(e) => setTempTime({...tempTime, endPeriod: e.target.value})}
-                    >
-                      <option value="AM">AM</option>
-                      <option value="PM">PM</option>
-                    </select>
-                  </div>
-                </div>
+                )}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                   <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Assign Trainer (Optional)</label>
                   <select value={formData.trainerId} onChange={(e) => setFormData({...formData, trainerId: e.target.value})}>
