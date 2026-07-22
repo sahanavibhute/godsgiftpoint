@@ -609,14 +609,17 @@ export default function App() {
     const [formData, setFormData] = useState({
       id: '', name: '', phone: '', email: '', password: '', age: '', gender: 'Male',
       birthDate: '', joinDate: '', planId: '', trainerId: '', status: 'Active',
-      medicalIssues: '', reasonForJoining: 'Fitness', weight: '', height: ''
+      medicalIssues: '', reasonForJoining: 'Fitness', weight: '', height: '',
+      payAmount: '', dueAmount: ''
     });
 
     const openCreateModal = () => {
+      const defaultPlan = plans[0];
       setFormData({
         id: '', name: '', phone: '', email: '', password: '', age: '', gender: 'Male',
-        birthDate: '', joinDate: getTodayDate(), planId: plans[0]?._id || '', trainerId: '', status: 'Active',
-        medicalIssues: '', reasonForJoining: 'Fitness', weight: '', height: ''
+        birthDate: '', joinDate: getTodayDate(), planId: defaultPlan?._id || '', trainerId: '', status: 'Active',
+        medicalIssues: '', reasonForJoining: 'Fitness', weight: '', height: '',
+        payAmount: defaultPlan ? defaultPlan.price : 0, dueAmount: 0
       });
       setShowFormModal(true);
     };
@@ -625,7 +628,8 @@ export default function App() {
       setFormData({
         id: m._id, name: m.name, phone: m.phone, email: m.email || '', password: '', age: m.age || '', gender: m.gender || 'Male',
         birthDate: m.birthDate || '', joinDate: m.joinDate || getTodayDate(), planId: m.planId?._id || '', trainerId: m.trainerId?._id || '', status: m.status || 'Active',
-        medicalIssues: m.medicalIssues || '', reasonForJoining: m.reasonForJoining || 'Fitness', weight: m.weight || '', height: m.height || ''
+        medicalIssues: m.medicalIssues || '', reasonForJoining: m.reasonForJoining || 'Fitness', weight: m.weight || '', height: m.height || '',
+        payAmount: m.planId ? m.planId.price : 0, dueAmount: 0
       });
       setShowFormModal(true);
     };
@@ -785,7 +789,28 @@ export default function App() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                   <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Status</label>
-                  <select value={formData.status === 'Active' ? 'Paid' : formData.status} onChange={(e) => setFormData({...formData, status: e.target.value === 'Paid' ? 'Active' : e.target.value})}>
+                  <select 
+                    value={formData.status === 'Active' ? 'Paid' : formData.status} 
+                    onChange={(e) => {
+                      const newStatus = e.target.value === 'Paid' ? 'Active' : e.target.value;
+                      const selectedPlan = plans.find(p => p._id === formData.planId);
+                      const planPrice = selectedPlan ? selectedPlan.price : 0;
+                      
+                      let newPay = formData.payAmount;
+                      let newDue = formData.dueAmount;
+                      if (!formData.id) {
+                        newPay = newStatus === 'Active' ? planPrice : 0;
+                        newDue = newStatus === 'Active' ? 0 : planPrice;
+                      }
+
+                      setFormData(prev => ({
+                        ...prev,
+                        status: newStatus,
+                        payAmount: newPay,
+                        dueAmount: newDue
+                      }));
+                    }}
+                  >
                     <option value="Paid">Paid</option>
                     <option value="Pending">Pending</option>
                   </select>
@@ -800,12 +825,66 @@ export default function App() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', gridColumn: '1 / -1' }}>
                   <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Assign Membership Plan</label>
-                  <select value={formData.planId} onChange={(e) => setFormData({...formData, planId: e.target.value})} required>
+                  <select 
+                    value={formData.planId} 
+                    onChange={(e) => {
+                      const selectedPlanId = e.target.value;
+                      const selectedPlan = plans.find(p => p._id === selectedPlanId);
+                      const planPrice = selectedPlan ? selectedPlan.price : 0;
+                      
+                      // Auto populate payAmount and dueAmount depending on status
+                      const newPay = formData.status === 'Active' ? planPrice : 0;
+                      const newDue = formData.status === 'Active' ? 0 : planPrice;
+
+                      setFormData(prev => ({
+                        ...prev,
+                        planId: selectedPlanId,
+                        payAmount: newPay,
+                        dueAmount: newDue
+                      }));
+                    }} 
+                    required
+                  >
                     {plans.map(p => (
                       <option key={p._id} value={p._id}>{p.name} - ₹{p.price}</option>
                     ))}
                   </select>
                 </div>
+                
+                {!formData.id && (
+                  <>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                      <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Pay Amount (₹)</label>
+                      <input 
+                        type="number" 
+                        value={formData.payAmount} 
+                        onChange={(e) => {
+                          const payValStr = e.target.value;
+                          const selectedPlan = plans.find(p => p._id === formData.planId);
+                          const planPrice = selectedPlan ? selectedPlan.price : 0;
+                          const numericPayVal = payValStr === '' ? 0 : parseFloat(payValStr);
+                          const dueVal = Math.max(0, planPrice - (isNaN(numericPayVal) ? 0 : numericPayVal));
+                          setFormData(prev => ({
+                            ...prev,
+                            payAmount: payValStr,
+                            dueAmount: dueVal
+                          }));
+                        }} 
+                        required 
+                        min="0"
+                      />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                      <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Due Amount (₹)</label>
+                      <input 
+                        type="number" 
+                        value={formData.dueAmount} 
+                        readOnly 
+                        style={{ background: 'rgba(255,255,255,0.05)', cursor: 'not-allowed' }}
+                      />
+                    </div>
+                  </>
+                )}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', gridColumn: '1 / -1' }}>
                   <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Assign Personal Trainer (Optional)</label>
                   <select value={formData.trainerId} onChange={(e) => setFormData({...formData, trainerId: e.target.value})}>

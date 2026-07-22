@@ -494,7 +494,7 @@ app.get('/api/members/:id', protect, async (req, res) => {
 app.post('/api/members', protect, authorize('Admin'), async (req, res) => {
   const {
     name, phone, email, password, age, gender, birthDate, joinDate, planId, trainerId,
-    status, medicalIssues, reasonForJoining, weight, height
+    status, medicalIssues, reasonForJoining, weight, height, payAmount, dueAmount
   } = req.body;
 
   if (!name || !phone || !planId) {
@@ -550,14 +550,28 @@ app.post('/api/members', protect, authorize('Admin'), async (req, res) => {
       d.setMonth(d.getMonth() + plan.durationMonths);
       const dueDate = d.toISOString().split('T')[0];
 
+      const finalPayAmount = payAmount !== undefined ? parseFloat(payAmount) : plan.price;
+      const finalDueAmount = dueAmount !== undefined ? parseFloat(dueAmount) : 0;
+
+      let paymentStatus = 'Paid';
+      if (finalDueAmount > 0) {
+        if (finalPayAmount > 0) {
+          paymentStatus = 'Partially Paid';
+        } else {
+          paymentStatus = 'Pending';
+        }
+      } else if (finalPayAmount === 0 && plan.price > 0) {
+        paymentStatus = 'Pending';
+      }
+
       await Payment.create({
         memberId: member._id,
         planId: plan._id,
-        amount: plan.price,
-        dueAmount: 0,
+        amount: finalPayAmount,
+        dueAmount: finalDueAmount,
         paymentDate: member.joinDate,
         dueDate,
-        status: member.status === 'Active' ? 'Paid' : 'Pending',
+        status: paymentStatus,
         invoiceNumber
       });
     }
