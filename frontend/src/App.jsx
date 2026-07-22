@@ -1684,12 +1684,38 @@ export default function App() {
       }
     };
 
+    const timeRangeOptions = [
+      "05:00 AM - 06:00 AM",
+      "06:00 AM - 07:00 AM",
+      "07:00 AM - 08:00 AM",
+      "08:00 AM - 09:00 AM",
+      "09:00 AM - 10:00 AM",
+      "10:00 AM - 11:00 AM",
+      "05:00 AM - 06:30 AM",
+      "06:00 AM - 07:30 AM",
+      "07:00 AM - 08:30 AM",
+      "08:00 AM - 09:30 AM",
+      "04:00 PM - 05:00 PM",
+      "05:00 PM - 06:00 PM",
+      "06:00 PM - 07:00 PM",
+      "07:00 PM - 08:00 PM",
+      "08:00 PM - 09:00 PM",
+      "09:00 PM - 10:00 PM",
+      "04:00 PM - 05:30 PM",
+      "05:00 PM - 06:30 PM",
+      "06:00 PM - 07:30 PM",
+      "07:00 PM - 08:30 PM",
+      "08:00 PM - 09:30 PM"
+    ];
+
+    const isCustomTime = formData.timeRange && !timeRangeOptions.includes(formData.timeRange) && formData.timeRange !== 'Custom';
+
     return (
       <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <h2 style={{ fontSize: '1.4rem', fontWeight: 800 }}>Trainer Slots Scheduler</h2>
           <button onClick={() => {
-            setFormData({ id: '', name: '', timeRange: '', trainerId: '', maxCapacity: 20 });
+            setFormData({ id: '', name: '', timeRange: timeRangeOptions[0], trainerId: '', maxCapacity: 20 });
             setShowForm(true);
           }} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Plus size={16} /> Create Slot</button>
         </div>
@@ -1742,8 +1768,36 @@ export default function App() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                   <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Time Range</label>
-                  <input type="text" value={formData.timeRange} onChange={(e) => setFormData({...formData, timeRange: e.target.value})} required placeholder="06:00 AM - 07:30 AM" />
+                  <select 
+                    value={isCustomTime ? 'Custom' : formData.timeRange} 
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === 'Custom') {
+                        setFormData({...formData, timeRange: '06:00 AM - 07:00 AM'}); // default custom
+                      } else {
+                        setFormData({...formData, timeRange: val});
+                      }
+                    }} 
+                    required
+                  >
+                    {timeRangeOptions.map(opt => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                    <option value="Custom">Custom Time...</option>
+                  </select>
                 </div>
+                {isCustomTime && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                    <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Custom Time Range</label>
+                    <input 
+                      type="text" 
+                      value={formData.timeRange} 
+                      onChange={(e) => setFormData({...formData, timeRange: e.target.value})} 
+                      required 
+                      placeholder="e.g. 02:00 PM - 03:00 PM" 
+                    />
+                  </div>
+                )}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                   <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Assign Trainer (Optional)</label>
                   <select value={formData.trainerId} onChange={(e) => setFormData({...formData, trainerId: e.target.value})}>
