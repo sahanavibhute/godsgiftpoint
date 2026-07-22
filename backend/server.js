@@ -969,6 +969,7 @@ app.get('/api/payments', protect, authorize('Admin'), async (req, res) => {
       member_name: p.memberId?.name || 'Deleted Member',
       member_phone: p.memberId?.phone || 'N/A',
       plan_name: p.planId?.name || 'Custom Plan',
+      plan_id: p.planId?._id || '',
       amount: p.amount,
       due_amount: p.dueAmount,
       payment_date: p.paymentDate,

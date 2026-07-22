@@ -1288,6 +1288,15 @@ export default function App() {
     // Auto set default plan pricing, auto-calculate dates and handle discounts
     useEffect(() => {
       if (formData.plan_id) {
+        // If the selected member has an incomplete payment, we should NOT reset the amount and due_date automatically
+        const incompletePayment = payments.find(p => 
+          p.member_id === formData.member_id && 
+          (p.status === 'Partially Paid' || p.status === 'Pending' || (p.due_amount && p.due_amount > 0))
+        );
+        if (incompletePayment) {
+          return; // Skip auto-overwriting if we are in pay-off mode
+        }
+
         const chosenPlan = plans.find(p => p._id === formData.plan_id);
         if (chosenPlan) {
           let price = chosenPlan.price;
@@ -1307,7 +1316,35 @@ export default function App() {
           }));
         }
       }
-    }, [formData.plan_id, applyDiscount, formData.payment_date]);
+    }, [formData.plan_id, applyDiscount, formData.payment_date, formData.member_id]);
+
+    // Auto preset incomplete payment details if they exist for the selected member
+    useEffect(() => {
+      if (showInvoiceForm && formData.member_id) {
+        const incompletePayment = payments.find(p => 
+          p.member_id === formData.member_id && 
+          (p.status === 'Partially Paid' || p.status === 'Pending' || (p.due_amount && p.due_amount > 0))
+        );
+
+        if (incompletePayment) {
+          setFormData(prev => ({
+            ...prev,
+            plan_id: incompletePayment.plan_id || prev.plan_id,
+            amount: incompletePayment.due_amount || 0,
+            due_amount: 0,
+            due_date: incompletePayment.due_date || prev.due_date,
+            status: 'Paid'
+          }));
+        } else {
+          // If no incomplete payment exists, clear due_amount and let first useEffect run
+          setFormData(prev => ({
+            ...prev,
+            due_amount: '',
+            status: 'Paid'
+          }));
+        }
+      }
+    }, [formData.member_id, showInvoiceForm]);
 
     // Handle invoice preset triggers (e.g. from Renewal button in member details)
     useEffect(() => {
